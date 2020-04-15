@@ -1,10 +1,12 @@
-import Nav from '../components/nav'
+import Layout from "../components/layout";
+import React from "react";
 
 export default () => (
-  <div>
-    <Nav />
-    <div className="hero">
-      <h1 className="title">Next.js + Tailwind CSS</h1>
+    <div>
+        <Layout>
+            <div className="hero">
+                <h1 className="title">The Fastest Online Shop</h1>
+            </div>
+        </Layout>
     </div>
-  </div>
 )
