@@ -6,6 +6,11 @@
 /* purgecss end ignore */
 @tailwind utilities;
 
+.header {
+  height: 600px;
+  background-color: #000A14
+}
+
 .hero {
   width: 100%;
   color: #333;

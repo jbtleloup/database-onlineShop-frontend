@@ -1,8 +1,26 @@
 import Head from 'next/head';
-import React from "react";
+import React, {useContext, useEffect} from "react";
 import Nav from "./nav";
+import {useUser, useDispatchUser} from './User';
 
 export default function Layout({children}) {
+    const user = useUser();
+    console.log(user);
+    const dispatch = useDispatchUser();
+    useEffect(() => {
+        if (typeof window !== undefined && !user.loggedIn) {
+            const cachedUser = localStorage.getItem('user');
+            if (cachedUser) {
+                dispatch({
+                    type: 'login',
+                    payload: {
+                        ...JSON.parse(cachedUser),
+                    },
+                })
+            }
+        }
+    }, []);
+
     return (
         <>
             <Head>
@@ -36,3 +54,4 @@ export default function Layout({children}) {
         </>
     )
 }
+

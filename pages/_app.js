@@ -1,7 +1,17 @@
+import App from 'next/app'
 import '../styles/index.css'
+import { UserProvider } from '../components/User'
+import React from "react";
 
-function MyApp({ Component, pageProps }) {
-  return <Component {...pageProps} />
+class MyApp extends App {
+    render() {
+        const { Component, pageProps } = this.props
+        return (
+            <UserProvider>
+                <Component {...pageProps} />
+            </UserProvider>
+        )
+    }
 }
 
 export default MyApp
