@@ -1,9 +1,18 @@
 import Layout from "../components/layout";
 import React from "react";
-import fetch from 'node-fetch';
+import nodeFetch from 'node-fetch';
 import Link from "next/link";
+import fetch from '../library/fetch';
+import useSWR from 'swr';
+import {useUser} from "../components/User";
 
-const Movie = ({id, title, item_length, year_released, creator, genre, price, item_type}) => {
+const Item = ({id, title, item_length, year_released, creator, genre, price, item_type, discount, urlPic}) => {
+    const {data, error} = useSWR(discount ? `/api/discount?discountUrl=${discount}` : null, fetch);
+
+    if (error) {
+        console.log(error);
+    }
+
     let duration = "Length: ";
     let creatorName;
     switch (item_type) {
@@ -35,10 +44,19 @@ const Movie = ({id, title, item_length, year_released, creator, genre, price, it
             </div>
             <div className="absolute bottom-0">
                 <img className="h-56 w-full object-cover mt-2"
-                     src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=750&q=80"
-                     alt="NIKE AIR"/>
+                     src={urlPic}
+                     alt="item image"/>
                 <div className="flex items-center justify-between px-4 py-2 bg-gray-900">
                     <h1 className="text-gray-200 font-bold text-xl">${price}</h1>
+                    {discount && data ?
+                        <div>
+                            <button
+                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded-full text-sm"
+                                type="button">
+                                {data.percent_off * 100}% off
+                            </button>
+                        </div> : <></>
+                    }
                     <Link href="/product/[id]" as={`/product/${id}`}>
                         <a className="px-3 py-1 bg-gray-200 text-sm text-gray-900 font-semibold rounded">View Item</a>
                     </Link>
@@ -49,13 +67,15 @@ const Movie = ({id, title, item_length, year_released, creator, genre, price, it
 };
 
 const ProductsPage = ({items}) => {
+    const user = useUser();
+    const filteredItems = items.filter((item) => !user.cart.some((cartItem) => cartItem.id === item.id));
     return (
         <div>
             <Layout>
                 <div className="hero">
                     <h1 className="title">Our Products</h1>
                     <div className="sm:flex sm:flex-wrap sm:m-16 sm:justify-between">
-                        {items.map(item => <Movie key={item.id} {...item}/>)}
+                        {filteredItems.map(item => <Item key={item.id} {...item}/>)}
                     </div>
                 </div>
             </Layout>
@@ -66,8 +86,9 @@ const ProductsPage = ({items}) => {
 export async function getStaticProps() {
     // params contains the post `id`.
     // If the route is like /posts/1, then params.id is 1
-    const raw = await fetch('http://3.87.30.125:8000/item/');
+    const raw = await nodeFetch('http://3.87.30.125:8000/item/');
     const items = await raw.json();
+    // console.log(items);
     // Pass post data to the page via props
     return {props: {items}}
 }

@@ -1,5 +1,4 @@
-const ProductCard = ({item, handleItemCart, mode, number, removeItemFromCart}) => {
-    console.log(item);
+const ProductCard = ({item, handleItemCart, mode, removeItemFromCart}) => {
     let duration = "Length: ";
     let creatorName;
     switch (item.item_type) {
@@ -19,7 +18,7 @@ const ProductCard = ({item, handleItemCart, mode, number, removeItemFromCart}) =
             <div className="sm:mx-32 mx-3 py-5">
                 <br/>
                 <div className="bg-white shadow-xl rounded-lg overflow-hidden sm:flex">
-                    <img className="sm:w-1/3 h-auto object-cover" src="/speed-dark.jpg"
+                    <img className="sm:w-1/3 h-auto object-cover" src={item.urlPic}
                          alt="Your fabulous dish"/>
                     <div className="w-full">
                         <div className="px-4 sm:px-24 pt-6 pb-4 mb-4">
@@ -29,7 +28,7 @@ const ProductCard = ({item, handleItemCart, mode, number, removeItemFromCart}) =
                             <div className="mb-4 flex">
                                 <p className="text-gray-700 text-xl">
                                     <span className="text-gray-800 font-semibold">Type: </span>
-                                    {/*{item.item_type}*/}
+                                    {item.item_type}
                                 </p>
                             </div>
                             <div className="mb-4 flex">
@@ -56,14 +55,6 @@ const ProductCard = ({item, handleItemCart, mode, number, removeItemFromCart}) =
                                     {item.genre}
                                 </p>
                             </div>
-                            {number
-                                ? <div className="mb-4 flex">
-                                    <p className="text-gray-700 text-xl">
-                                        <span className="text-gray-800 font-semibold">You have {number} of this item in your cart</span>
-                                    </p>
-                                </div>
-                                :<></>
-                            }
                         </div>
                     </div>
                     <div className="px-4 sm:pt-6 sm:pb-4 mb-4 sm:mr-20 w-full">
@@ -93,6 +84,6 @@ const ProductCard = ({item, handleItemCart, mode, number, removeItemFromCart}) =
             </div>
         </div>
     );
-}
+};
 
 export default ProductCard;

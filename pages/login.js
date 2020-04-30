@@ -2,12 +2,12 @@ import React, {useState} from "react";
 import {useRouter} from 'next/router';
 import Head from 'next/head';
 import Layout from '../components/layout';
-import {login, getUserFromEmail} from '../library/apihandler';
-import { useUser, useDispatchUser } from '../components/User';
+import { useDispatchUser } from '../components/User';
+import {fetchPost} from "../library/fetch";
+import {loginState} from "../library/UserState";
 
 const LoginPage = () => {
     const dispatch = useDispatchUser();
-
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
@@ -22,25 +22,13 @@ const LoginPage = () => {
             return;
         }
         try {
-            const response = await login(email, password);
+            const response = await fetchPost('/api/login', {username: email, password:password});
             if (response.token) {
-                const fullUser = await getUserFromEmail(email);
-                const userState = {
-                    type: 'login',
-                    payload: {
-                        loggedIn: true,
-                        user: {
-                            ...fullUser,
-                            token: response.token,
-                        },
-                        cart:[],
-                    },
-                };
-                console.log(fullUser);
+                const fullUser = await fetchPost('/api/user', {username: email});
+                const userState = loginState(fullUser, response.token);
                 dispatch({
                     ...userState,
                 });
-                localStorage.setItem('user', JSON.stringify(userState.payload));
                 await router.push('/');
             } else {
                 setIsError(true)
@@ -48,7 +36,6 @@ const LoginPage = () => {
         } catch (e) {
             console.log('error: ', e);
         }
-
 
     };
     return (

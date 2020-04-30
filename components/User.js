@@ -13,6 +13,7 @@ const initialState ={
 const reducer = (state, action) => {
     switch (action.type) {
         case 'login':
+            localStorage.setItem('user', JSON.stringify(action.payload));
             return action.payload;
         case 'logout':
             return initialState;
@@ -25,6 +26,10 @@ const reducer = (state, action) => {
             if (index > -1) {
                 state.cart.splice(index, 1);
             }
+            localStorage.setItem('user', JSON.stringify(state));
+            return state;
+        case 'clearCart':
+            state.cart = [];
             localStorage.setItem('user', JSON.stringify(state));
             return state;
         default:

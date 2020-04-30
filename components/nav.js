@@ -20,7 +20,7 @@ export default function Nav() {
                 <div className="flex justify-between items-center">
                     <div className="text-2xl font-bold text-gray-800 md:text-3xl">
                         <Link href="/">
-                            <a className="">Brand</a>
+                            <a className="">TFOS</a>
                         </Link>
                     </div>
                     <div className="md:hidden">
@@ -41,10 +41,10 @@ export default function Nav() {
                     <Link href="/products">
                         <a className="text-gray-800 rounded hover:bg-gray-900 hover:text-gray-100 py-2 px-2 md:mx-2">Products</a>
                     </Link>
-                    <Link href="/">
-                        <a className="text-gray-800 rounded hover:bg-gray-900 hover:text-gray-100 py-2 px-2 md:mx-2">Contact</a>
-                    </Link>
                     {user.loggedIn ? <>
+                            <Link href="/purchaseHistory">
+                                <a className="text-gray-800 rounded hover:bg-gray-900 hover:text-gray-100 py-2 px-2 md:mx-2">Purchase History</a>
+                            </Link>
                             <Link href="/cart">
                                 <a className="text-gray-800 py-2 px-2 md:mx-2 rounded hover:bg-gray-900 hover:text-gray-100">
                                     <img className="w-6 h-auto hidden sm:inline-block pr-1" src="/supermarket.svg"

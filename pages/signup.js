@@ -2,8 +2,9 @@ import React, {useState} from "react";
 import {useRouter} from 'next/router';
 import Head from 'next/head';
 import Layout from '../components/layout';
-import {login} from '../library/apihandler';
 import {useDispatchUser} from "../components/User";
+import {fetchPost} from "../library/fetch";
+import {loginState} from "../library/UserState";
 
 const SignUpPage = () => {
     const dispatch = useDispatchUser();
@@ -15,9 +16,16 @@ const SignUpPage = () => {
     const [isError, setIsError] = useState(false);
     const router = useRouter();
 
+    const matchingPasswordCheck = () => password === confirmPassword && password.length > 0;
+    const passwordLengthCheck = () => password.length > 7;
+    const noEmptyFieldsCheck = () => password && confirmPassword && firstname && lastname;
+    const allSignUpChecks = () => matchingPasswordCheck() && passwordLengthCheck() && noEmptyFieldsCheck();
+
     const handleSignUp = async (event) => {
         event.preventDefault();
-        // TODO: handle error cases
+
+        if (!allSignUpChecks()) return ;
+
         let newUser;
         let signupSuccess = false;
         const user = {
@@ -27,17 +35,7 @@ const SignUpPage = () => {
             password: password,
         };
         try {
-            // Create user
-             const rawResponse = await fetch('http://3.87.30.125:8000/user/', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(user),
-            });
-            const response = await rawResponse.json();
-            console.log(response);
+            const response = await fetchPost('/api/signup', user);
             newUser = response;
             signupSuccess = !!response.id;
         } catch (e) {
@@ -46,26 +44,14 @@ const SignUpPage = () => {
         }
         if (signupSuccess) {
             // login
-            const userState = {
-                type: 'login',
-                payload: {
-                    loggedIn: true,
-                    user: {
-                        ...newUser,
-                        token: response.token,
-                    },
-                    cart:[],
-                },
-            };
             try {
-                const response = await login(email, password);
-                if (response.token) {
-                    dispatch({
-                        ...userState,
-                    });
-                    localStorage.setItem('user', JSON.stringify(userState.payload));
-                    await router.push('/');
-                }
+                const response = await fetchPost('/api/login', {username: email, password: password});
+                if (!response.token) throw "No token received";
+                const userState = loginState(newUser, response.token);
+                dispatch({
+                    ...userState,
+                });
+                await router.push('/');
             } catch (e) {
                 console.log('error: ', e);
                 setIsError(true);
@@ -145,16 +131,16 @@ const SignUpPage = () => {
                                                 <ul>
                                                     <li className="flex items-center py-1">
                                                         <div
-                                                            className={`rounded-full p-1 fill-current ${password === confirmPassword && password.length > 0 ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}>
+                                                            className={`rounded-full p-1 fill-current ${matchingPasswordCheck() ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}>
                                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24"
                                                                  stroke="currentColor">
                                                                 <path
-                                                                    className={password === confirmPassword && password.length > 0 ? 'block' : 'hidden'}
+                                                                    className={matchingPasswordCheck() ? 'block' : 'hidden'}
                                                                     strokeLinecap="round"
                                                                     strokeLinejoin="round" strokeWidth="2"
                                                                     d="M5 13l4 4L19 7"/>
                                                                 <path
-                                                                    className={password === confirmPassword && password.length > 0 ? 'hidden' : 'block'}
+                                                                    className={matchingPasswordCheck() ? 'hidden' : 'block'}
                                                                     strokeLinecap="round"
                                                                     strokeLinejoin="round" strokeWidth="2"
                                                                     d="M6 18L18 6M6 6l12 12"/>
@@ -162,22 +148,22 @@ const SignUpPage = () => {
                                                             </svg>
                                                         </div>
                                                         <span
-                                                            className={`font-medium text-sm ml-3 ${password === confirmPassword && password.length > 0 ? 'text-green-700' : 'text-red-700'}`}>
-                                                            {password === confirmPassword && password.length > 0 ? 'Passwords match' : 'Passwords do not match'}
+                                                            className={`font-medium text-sm ml-3 ${matchingPasswordCheck() ? 'text-green-700' : 'text-red-700'}`}>
+                                                            {matchingPasswordCheck() ? 'Passwords match' : 'Passwords do not match'}
                                                         </span>
                                                     </li>
                                                     <li className="flex items-center py-1">
                                                         <div
-                                                            className={`rounded-full p-1 fill-current ${password.length > 7 ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}>
+                                                            className={`rounded-full p-1 fill-current ${passwordLengthCheck() ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}>
                                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24"
                                                                  stroke="currentColor">
                                                                 <path
-                                                                    className={password.length <= 7 ? 'hidden' : 'block'}
+                                                                    className={passwordLengthCheck() ? 'block' : 'hidden'}
                                                                     strokeLinecap="round"
                                                                     strokeLinejoin="round" strokeWidth="2"
                                                                     d="M5 13l4 4L19 7"/>
                                                                 <path
-                                                                    className={password.length <= 7 ? 'block' : 'hidden'}
+                                                                    className={passwordLengthCheck() ? 'hidden' : 'block'}
                                                                     strokeLinecap="round"
                                                                     strokeLinejoin="round" strokeWidth="2"
                                                                     d="M6 18L18 6M6 6l12 12"/>
@@ -185,23 +171,23 @@ const SignUpPage = () => {
                                                             </svg>
                                                         </div>
                                                         <span
-                                                            className={`font-medium text-sm ml-3 ${password.length > 7 ? 'text-green-700' : 'text-red-700'}`}
+                                                            className={`font-medium text-sm ml-3 ${passwordLengthCheck() ? 'text-green-700' : 'text-red-700'}`}
                                                         >
-                                                            {password.length > 7 ? 'The minimum length is reached' : 'At least 8 characters required'}
+                                                            {passwordLengthCheck() ? 'The minimum length is reached' : 'At least 8 characters required'}
                                                         </span>
                                                     </li>
                                                     <li className="flex items-center py-1">
                                                         <div
-                                                            className={`rounded-full p-1 fill-current ${password && firstname && lastname ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}>
+                                                            className={`rounded-full p-1 fill-current ${noEmptyFieldsCheck() ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}>
                                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24"
                                                                  stroke="currentColor">
                                                                 <path
-                                                                    className={password && firstname && lastname ? 'block' : 'hidden'}
+                                                                    className={noEmptyFieldsCheck() ? 'block' : 'hidden'}
                                                                     strokeLinecap="round"
                                                                     strokeLinejoin="round" strokeWidth="2"
                                                                     d="M5 13l4 4L19 7"/>
                                                                 <path
-                                                                    className={password && firstname && lastname ? 'hidden' : 'block'}
+                                                                    className={noEmptyFieldsCheck() ? 'hidden' : 'block'}
                                                                     strokeLinecap="round"
                                                                     strokeLinejoin="round" strokeWidth="2"
                                                                     d="M6 18L18 6M6 6l12 12"/>
@@ -209,14 +195,15 @@ const SignUpPage = () => {
                                                             </svg>
                                                         </div>
                                                         <span
-                                                            className={`font-medium text-sm ml-3 ${password && firstname && lastname ? 'text-green-700' : 'text-red-700'}`}
+                                                            className={`font-medium text-sm ml-3 ${noEmptyFieldsCheck() ? 'text-green-700' : 'text-red-700'}`}
                                                         >
-                                                            {password && firstname && lastname ? 'All the fields are filled out' : 'At least 1 field is empty'}
+                                                            {noEmptyFieldsCheck() ? 'All the fields are filled out' : 'At least 1 field is empty'}
                                                         </span>
                                                     </li>
                                                 </ul>
                                             </div>
-                                            <p className={`text-center text-red-700 ${isError ? 'block' : 'hidden'}`}>Something is wrong, this email address may already be used</p>
+                                            <p className={`text-center text-red-700 ${isError ? 'block' : 'hidden'}`}>Something
+                                                is wrong, this email address may already be used</p>
                                             <button
                                                 className="mt-3 text-lg font-semibold bg-gray-800 w-full text-white rounded-lg
                                                 px-6 py-3 block shadow-xl hover:text-white hover:bg-black"
