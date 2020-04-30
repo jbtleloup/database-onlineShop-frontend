@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import Layout from "../components/layout";
-import fetch, {fetchWithToken} from "../library/fetch";
+import fetch, {fetchPost, fetchWithToken} from "../library/fetch";
 import useSWR from "swr";
 import {useUser} from "../components/User";
 
@@ -11,10 +11,9 @@ const fetchDataItem = async (...args) => {
     const purchases = args[2].map(purchase => purchase.id);
     const relevantItems = allItems.filter((item) => purchases.includes(Number(item.invoice_id.split('/')[4])));
     const relevantItemsId = relevantItems.map(item=>item.item_id);
-
     return Promise.all(
         relevantItemsId.map(async (id)=> {
-            return fetch(id);
+            return fetchPost(url, {id:id});
         })
     )
 };
@@ -50,13 +49,10 @@ const PurchaseHistoryPage = () => {
     const {data: allItems} = useSWR(['/api/purchaseItem', user.user.token], fetchWithToken);
     const {data: purchases} = useSWR(['api/purchase', user.user.token], fetchWithToken);
     const {data: items, error} = useSWR(allItems && purchases ? ['/api/item', allItems, purchases] : null, fetchDataItem);
-    if (items) {
-        console.log(items);
-    }
     if (error) {
         console.log(error);
     }
-
+    console.log(items);
     return (
         <Layout>
             <div className="hero">
